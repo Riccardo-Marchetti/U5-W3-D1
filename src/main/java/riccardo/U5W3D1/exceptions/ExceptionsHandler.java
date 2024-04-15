@@ -27,6 +27,13 @@ public class ExceptionsHandler {
         }
         return new ErrorsDTO(ex.getMessage(), LocalDateTime.now());
     }
+
+    @ExceptionHandler
+    @ResponseStatus (HttpStatus.UNAUTHORIZED)
+    public ErrorsDTO handleUnauthorizedException(UnauthorizedException ex){
+        return new ErrorsDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
     @ExceptionHandler (Exception.class)
     @ResponseStatus (HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorsDTO handleException (Exception ex){

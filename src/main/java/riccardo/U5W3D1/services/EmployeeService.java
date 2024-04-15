@@ -43,7 +43,7 @@ public class EmployeeService {
                     throw new BadRequestException("l'email: " + body.email() + " è già in uso");
                 }
         );
-        Employee employee = new Employee(body.username(), body.name(), body.surname(), body.email());
+        Employee employee = new Employee(body.username(), body.name(), body.surname(), body.email(), body.password());
         employee.setAvatar("https://ui-avatars.com/api/?name=" + body.name() + "+" + body.surname());
         return this.employeeDAO.save(employee);
     }
@@ -67,5 +67,9 @@ public class EmployeeService {
         String avatar = (String) cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap()).get("url");
         found.setAvatar(avatar);
         return this.employeeDAO.save(found);
+    }
+
+    public Employee findByEmail (String email){
+       return this.employeeDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("l'Utente con email: " + email + " non è stato trovato"));
     }
 }
