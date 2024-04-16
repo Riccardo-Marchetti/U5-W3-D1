@@ -79,12 +79,14 @@ public class DeviceService {
         device.setStatus("Dismissed");
         return this.deviceDAO.save(device);
     }
-    public Device maintenanceDevice (UUID deviceId){
+    public Device maintenanceDevice (UUID deviceId, UUID employeeId){
         Device device = this.deviceDAO.findById(deviceId).orElseThrow(() -> new NotFoundException(deviceId));
+        Employee employee = this.employeeService.findEmployeeById(employeeId);
         if (device.getMaintenanceEndDate() != null && device.getMaintenanceEndDate().isBefore(LocalDate.now())) {
             device.setStatus(null);
             device.setMaintenanceStartDate(null);
             device.setMaintenanceEndDate(null);
+            device.setEmployee(employee);
         } else {
             if (device.getEmployee() != null) {
                 device.setEmployee(null);

@@ -1,12 +1,15 @@
 package riccardo.U5W3D1.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import riccardo.U5W3D1.enums.Role;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +19,8 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee {
+@JsonIgnoreProperties ({"password", "role", "authorities", "credentialsNonExpired", "accountNonExpired", "accountNonLocked", "enabled"})
+public class Employee implements UserDetails {
     @Id
     @GeneratedValue
     @Setter (AccessLevel.NONE)
@@ -31,6 +35,8 @@ public class Employee {
     private String email;
 
     private String password;
+    @Enumerated (EnumType.STRING)
+    private Role role;
 
     private String avatar;
 
@@ -44,5 +50,36 @@ public class Employee {
         this.surname = surname;
         this.email = email;
         this.password = password;
+        this.role = Role.USER;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(this.role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

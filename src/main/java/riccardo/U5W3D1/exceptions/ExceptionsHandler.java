@@ -1,6 +1,7 @@
 package riccardo.U5W3D1.exceptions;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -26,6 +27,12 @@ public class ExceptionsHandler {
             return new ErrorsDTO(message, LocalDateTime.now());
         }
         return new ErrorsDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN) // 403
+    public ErrorsDTO handleForbidden(AccessDeniedException ex){
+        return new ErrorsDTO("Non hai accesso a questa funzionalità!", LocalDateTime.now());
     }
 
     @ExceptionHandler

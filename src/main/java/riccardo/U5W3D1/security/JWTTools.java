@@ -34,4 +34,13 @@ public class JWTTools {
             throw new UnauthorizedException("Problemi con il token effettua di nuovo il login");
         }
     }
+
+    public String extractIdFromToken (String token) {
+        return Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secret.getBytes())) // verifica il token con quel segreto
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
 }

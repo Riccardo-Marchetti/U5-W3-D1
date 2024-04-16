@@ -3,6 +3,9 @@ package riccardo.U5W3D1.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,17 +28,34 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @GetMapping
-    private Page<Employee> getAllEmployee (@RequestParam (defaultValue = "0") int page, @RequestParam (defaultValue = "30") int size, @RequestParam (defaultValue = "username") String sortBy){
+    public Page<Employee> getAllEmployee (@RequestParam (defaultValue = "0") int page, @RequestParam (defaultValue = "30") int size, @RequestParam (defaultValue = "username") String sortBy){
         return this.employeeService.getAllEmployee(page, size, sortBy);
     }
 
+    @GetMapping ("/me")
+    public Employee getProfile (@AuthenticationPrincipal Employee currentUser){
+        return currentUser;
+    }
+
+    @PutMapping ("/me")
+    public Employee updateProfile (@AuthenticationPrincipal Employee currentUser, @RequestBody @Validated EmployeeDTO body ){
+        return this.employeeService.findEmployeeByIdAndUpdate(currentUser.getId(), body);
+    }
+
+    @DeleteMapping ("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProfile (@AuthenticationPrincipal Employee currentUser){
+        this.employeeService.deleteEmployee(currentUser.getId());
+    }
+
     @GetMapping ("/{employeeId}")
-    private Employee getEmployeeById (@PathVariable UUID employeeId){
+    public Employee getEmployeeById (@PathVariable UUID employeeId){
         return this.employeeService.findEmployeeById(employeeId);
     }
 
     @PutMapping ("/{employeeId}")
-    private Employee findEmployeeAndUpdate (@PathVariable UUID employeeId, @RequestBody @Validated EmployeeDTO body, BindingResult validation){
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Employee findEmployeeAndUpdate (@PathVariable UUID employeeId, @RequestBody @Validated EmployeeDTO body, BindingResult validation){
         if (validation.hasErrors()){
             throw new BadRequestException(validation.getAllErrors());
         }
@@ -43,14 +63,16 @@ public class EmployeeController {
     }
 
     @DeleteMapping ("/{employeeId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus (HttpStatus.NO_CONTENT)
-    private void deleteEmployee (@PathVariable UUID employeeId){
+    public void deleteEmployee (@PathVariable UUID employeeId){
         this.employeeService.deleteEmployee(employeeId);
     }
 
     @PostMapping ("/avatar/{employeeId}")
     @ResponseStatus (HttpStatus.CREATED)
-    private Employee uploadImage (@RequestParam ("avatar") MultipartFile image, @PathVariable UUID employeeId) throws IOException {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Employee uploadImage (@RequestParam ("avatar") MultipartFile image, @PathVariable UUID employeeId) throws IOException {
         return employeeService.uploadImage(image, employeeId);
     }
 }
